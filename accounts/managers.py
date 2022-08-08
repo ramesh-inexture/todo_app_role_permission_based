@@ -1,10 +1,11 @@
 from django.contrib.auth.models import BaseUserManager
 
 
-class UserManager(BaseUserManager):
+class CustomUserManager(BaseUserManager):
     def create_user(self, email, password=None, password2=None, **KWARGS):
         """Creates and saves a User with the given email, first_name, last_name, user_name,
          and password."""
+        print("call huaa")
         if not email:
             raise ValueError('User must have an email address')
 
@@ -26,7 +27,8 @@ class UserManager(BaseUserManager):
             password=password,
             **KWARGS
         )
-        user.is_admin = True
+        # user.is_admin = True
         user.is_staff = True
+        user.is_superuser = True
         user.save(using=self._db)
         return user
