@@ -1,36 +1,11 @@
 from django.db import models
-from django.contrib.auth.models import (PermissionsMixin, AbstractUser)
+from django.contrib.auth.models import (AbstractUser)
 from .managers import CustomUserManager
+from django.dispatch import receiver
+from django.urls import reverse
+from django_rest_passwordreset.signals import reset_password_token_created
+from django.core.mail import send_mail
 
-
-# CUSTOM USER
-# class User(AbstractBaseUser, PermissionsMixin):
-#     email = models.EmailField(
-#         verbose_name='email',
-#         max_length=255,
-#         unique=True,
-#     )
-#     first_name = models.CharField(max_length=250, blank=True)
-#     last_name = models.CharField(max_length=250, blank=True)
-#     user_name = models.CharField(max_length=150, unique=True)
-#     profile_picture = models.ImageField(default='default.jpeg', upload_to='profile_picture')
-#     is_active = models.BooleanField(default=True)
-#     is_staff = models.BooleanField(default=False)
-#     is_admin = models.BooleanField(default=False)
-#     created_at = models.DateTimeField(auto_now_add=True)
-#     updated_at = models.DateTimeField(auto_now=True)
-#
-#     objects = UserManager()
-#
-#     USERNAME_FIELD = 'email'
-#     REQUIRED_FIELDS = []
-#
-#     def __str__(self):
-#         return f"{self.id} | {self.email}"
-#
-
-class UserRoles(models.Model):
-    role = models.CharField(max_length=200)
 
 
 class User(AbstractUser):
@@ -51,3 +26,21 @@ class User(AbstractUser):
     def __str__(self):
         return f"{self.id} | {self.email}"
 
+
+@receiver(reset_password_token_created)
+def password_reset_token_created(sender, instance, reset_password_token, *args, **kwargs):
+
+    email_plaintext_message = "{}?token={}".format(reverse('password_reset:reset-password-request'), reset_password_token.key)
+
+    send_mail(
+        # title:
+        "Password Reset for {title}".format(title="Some website title"),
+        # message:
+        email_plaintext_message,
+        # from:
+        "noreply@somehost.local",
+        # to:
+        [reset_password_token.user.email]
+
+    ),
+    # print(reset_password_token)

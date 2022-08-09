@@ -1,7 +1,8 @@
 from django.urls import path
 from rest_framework_simplejwt import views as jwt_views
 from .views import (AuthUserRegistrationView, AllPermissionListAPIView, GroupListCreateAPIView,
-                    AssignRoleCreateAPIView, GroupRetriveAPIview, GroupManageAPIView, RemoveGroupUserAPIView)
+                    AssignRoleCreateAPIView, GroupRetriveAPIview, GroupManageAPIView, RemoveGroupUserAPIView,
+                    UserProfileRetrieveUpdateView)
 
 urlpatterns = [
     path('login/', jwt_views.TokenObtainPairView.as_view(), name='token_obtain_pair'),
@@ -13,4 +14,5 @@ urlpatterns = [
     path('see_group_detail/<int:pk>/', GroupRetriveAPIview.as_view(), name='group_detail'),
     path('manage_group_detail/<int:pk>/', GroupManageAPIView.as_view(), name='manage_group_detail'),
     path('manage_group_user/<int:pk>/<int:uk>/', RemoveGroupUserAPIView.as_view(), name='manage_group_user'),
+    path('manage_user_profile/<int:pk>/', UserProfileRetrieveUpdateView.as_view(), name='manage_user_profile'),
 ]

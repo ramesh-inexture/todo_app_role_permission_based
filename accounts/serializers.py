@@ -134,3 +134,22 @@ class RemoveUserGroupSerializer(serializers.Serializer):
                 "error": "User is not in group "
             })
         return attrs
+
+
+# class GroupSerializerForUserProfile(serializers.ModelSerializer):
+#
+#     class Meta:
+
+class UserProfileSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = User
+        # fields = '__all__'
+        fields = [
+            "id", "username", "first_name", "last_name", "email", "profile_picture", "is_staff", "is_superuser",
+            "is_active",  "groups", "user_permissions"
+                  ]
+        read_only_fields = [
+            "id", "is_superuser", "is_staff", "is_active", "groups",
+            "user_permissions"
+        ]

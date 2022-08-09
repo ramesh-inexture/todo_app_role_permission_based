@@ -3,12 +3,12 @@ from rest_framework import status, generics
 from rest_framework.views import APIView
 from rest_framework.permissions import IsAdminUser, DjangoModelPermissions
 from rest_framework.response import Response
-from .permissions import is_in_group, HasGroupPermission
+from .permissions import ModelPermission
 from rest_framework.permissions import AllowAny, IsAuthenticated
 
-from accounts.models import UserRoles, User
+from accounts.models import User
 from accounts.serializers import UserRegistrationSerializer, UserPermissionsSerializer, \
-    AuthGroupSerializer, UserGroupSerializer, GroupDetailSerializer, RemoveUserGroupSerializer
+    AuthGroupSerializer, UserGroupSerializer, GroupDetailSerializer, RemoveUserGroupSerializer, UserProfileSerializer
 
 
 class AuthUserRegistrationView(APIView):
@@ -42,15 +42,15 @@ def get_user_permissions(user):
 
 
 class GroupListCreateAPIView(generics.ListCreateAPIView):
-    permission_classes = [IsAdminUser]
+    permission_classes = [ModelPermission]
     serializer_class = AuthGroupSerializer
     queryset = Group.objects.all()
 
 
 class AllPermissionListAPIView(generics.ListAPIView):
-    permission_classes = [IsAdminUser]
+    permission_classes = [ModelPermission]
     Serializer_class = UserPermissionsSerializer
-    queryset = UserRoles.objects.all()
+    queryset = User.objects.all()
 
     def get_object(self):
         user = self.request.user
@@ -64,7 +64,8 @@ class AllPermissionListAPIView(generics.ListAPIView):
 
 
 class AssignRoleCreateAPIView(APIView):
-    permission_classes = [IsAdminUser]
+    permission_classes = [ModelPermission]
+    queryset = Group.objects.none()
 
     def post(self, request):
         serializer = UserGroupSerializer(data=request.data)
@@ -85,7 +86,7 @@ class AssignRoleCreateAPIView(APIView):
 
 class GroupRetriveAPIview(generics.ListAPIView):
     queryset = Group.objects.all()
-    permission_classes = [IsAuthenticated, DjangoModelPermissions]
+    permission_classes = [IsAuthenticated, ModelPermission]
 
     def get_queryset(self, *args, **kwargs):
         pk = self.kwargs.get('pk')
@@ -112,7 +113,7 @@ class GroupRetriveAPIview(generics.ListAPIView):
 
 
 class GroupManageAPIView(generics.RetrieveUpdateDestroyAPIView):
-    permission_classes = [IsAdminUser]
+    # permission_classes = [ModelPermission]
     serializer_class = GroupDetailSerializer
 
     def get_queryset(self, *args, **kwargs):
@@ -165,5 +166,11 @@ class RemoveGroupUserAPIView(APIView):
         return Response({"details": "Some Error is Occurred"}, status=status.HTTP_400_BAD_REQUEST)
 
 
-# class UserProfileRetriveUpdateView(generics.RetrieveUpdateAPIView):
-#     permission_classes = [IsAuthenticated]
+class UserProfileRetrieveUpdateView(generics.RetrieveUpdateAPIView):
+
+    permission_classes = [ModelPermission]
+    serializer_class = UserProfileSerializer
+    queryset = User.objects.all()
+
+
+

@@ -24,7 +24,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # See https://docs.djangoproject.com/en/4.0/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'django-insecure-w3%sxqw6x(fw!tjss%c(ad=z3-##_3tl6kerkmoug(_y-1l1ah'
+SECRET_KEY = os.environ.get('DJANGO_SECRET_KEY')
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
@@ -45,6 +45,7 @@ INSTALLED_APPS = [
     # Third Party Apps
     'rest_framework',
     'rest_framework_simplejwt',
+    'django_rest_passwordreset',
 
     # local Apps
     'accounts',
@@ -58,6 +59,7 @@ REST_FRAMEWORK = {
     ],
 }
 
+EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
@@ -153,4 +155,3 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 # Added By me
 AUTH_USER_MODEL = 'accounts.User'
-#
