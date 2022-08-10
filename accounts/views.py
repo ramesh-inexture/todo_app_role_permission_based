@@ -172,5 +172,10 @@ class UserProfileRetrieveUpdateView(generics.RetrieveUpdateAPIView):
     serializer_class = UserProfileSerializer
     queryset = User.objects.all()
 
-
+    # def get_object(self, *args, **kwargs):
+    #     pk = self.kwargs.get('pk')
+    #     queryset = User.objects.get(id=pk)
+    #     return queryset
+    #
+    # def get(self):
 

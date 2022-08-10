@@ -49,6 +49,7 @@ INSTALLED_APPS = [
 
     # local Apps
     'accounts',
+    'features',
 ]
 
 REST_FRAMEWORK = {
