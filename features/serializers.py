@@ -24,15 +24,6 @@ class CreateTaskSerializer(serializers.ModelSerializer):
         model = Task
         fields = ['id', 'list', 'title', 'desc', 'completed']
 
-    def validate(self, attrs):
-        """Validating that User should have to be the owner of provided list to create task on that list"""
-        list = attrs.get('list')
-        user = self.context['request'].user
-        if list.created_by == user:
-            return attrs
-        else:
-            raise ValidationError("This list is not created by You !")
-
 
 class ManageTaskSerializer(serializers.ModelSerializer):
     """Serializer of Managing Task or Subtasks of Task models"""
@@ -51,15 +42,6 @@ class CreateSubtaskSerializer(serializers.ModelSerializer):
     class Meta:
         model = Task
         fields = ['id', 'list', 'title', 'desc', 'completed', 'is_subtask']
-
-    def validate(self, attrs):
-        """Validating list should have Created by user"""
-        list = attrs.get('list')
-        user = self.context['request'].user
-        if list.created_by == user:
-            return attrs
-        else:
-            raise ValidationError("This list is not created by You !")
 
 
 class SubtaskModelSerializer(serializers.ModelSerializer):

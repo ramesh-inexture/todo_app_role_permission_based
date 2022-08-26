@@ -3,8 +3,8 @@ from rest_framework.exceptions import ValidationError
 from rest_framework.generics import get_object_or_404
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
-from features.models import Tasklist, Task, Notification, Subtask
-from accounts.permissions import ModelPermission, IsOwner
+from features.models import Tasklist, Task, Notification
+from accounts.permissions import ModelPermission, IsOwner, IsOwnerOrModelPermission
 from rest_framework.filters import SearchFilter, OrderingFilter
 from features.serializers import CreateTasklistSerializer, UpdateDeleteTasklistSerializer, CreateTaskSerializer, \
     ManageTaskSerializer, SearchTaskSerializer, NotificationSerializer, CreateSubtaskSerializer, SubtaskModelSerializer, \
@@ -38,7 +38,7 @@ class TasklistRetrieveUpdateDestroyAPIView(generics.UpdateAPIView, generics.Dest
     Here ModelPermission allows only permitted user to Manage Tasklist
     """
     queryset = Tasklist.objects.all()
-    permission_classes = [ModelPermission|IsOwner]
+    permission_classes = [IsOwnerOrModelPermission]
     serializer_class = UpdateDeleteTasklistSerializer
 
     def patch(self, request, *args, **kwargs):
@@ -62,7 +62,7 @@ class TaskCreateAPIView(generics.CreateAPIView):
     Here we have to provide list (tasklist_id), title, desc to create Task
     """
     queryset = Task.objects.all()
-    permission_classes = []
+    permission_classes = [ModelPermission]
     serializer_class = CreateTaskSerializer
 
     def post(self, request, *args, **kwargs):
@@ -82,7 +82,7 @@ class TaskRetrieveUpdateDestroyAPIView(generics.RetrieveUpdateDestroyAPIView):
 
     serializer_class = ManageTaskSerializer
     queryset = Task.objects.all()
-    permission_classes = [ModelPermission|IsOwner]
+    permission_classes = [ModelPermission]
 
     def get_object(self):
         pk = self.kwargs['pk']
@@ -116,7 +116,7 @@ class SubtaskCreateAPIView(generics.CreateAPIView):
 
     queryset = Task.objects.all()
     serializer_class = CreateSubtaskSerializer
-    permission_classes = [IsOwner]
+    permission_classes = [ModelPermission]
 
     def post(self, request, *args, **kwargs):
         data = request.data.copy()
@@ -124,7 +124,6 @@ class SubtaskCreateAPIView(generics.CreateAPIView):
             task = data['task']
             task_obj = Task.objects.get(id=task)
             list = task_obj.list.id
-            print(list)
         else:
             raise ValidationError({"task": "required_field"})
         data['list'] = list
@@ -147,7 +146,7 @@ class SubtaskCreateAPIView(generics.CreateAPIView):
 
 class SearchTaskView(generics.ListAPIView):
     """ Search Friend Through This APIView, We can Search Task by Providing task's title """
-    permission_classes = [IsAuthenticated, ModelPermission]
+    permission_classes = [IsAuthenticated]
     """ Getting Serializer to Show Data When User Searches Their Task """
     serializer_class = SearchTaskSerializer
     queryset = Task.objects.all()
@@ -162,8 +161,8 @@ class SearchTaskView(generics.ListAPIView):
 
 class NotificationsView(generics.ListAPIView):
     """This class is used to get all notification from notification table"""
-    # queryset = Notification.objects.all()
-    permission_classes = [ModelPermission]
+    queryset = Notification.objects.all()
+    permission_classes = [IsAuthenticated]
     serializer_class = NotificationSerializer
 
     def get_queryset(self):
@@ -172,32 +171,30 @@ class NotificationsView(generics.ListAPIView):
 
 
 class TaskRetrieveAPIView(generics.RetrieveAPIView):
+    """This View is used to retrieve Task Details"""
     serializer_class = TaskRetrieveSerializer
     queryset = Task.objects.all()
-    permission_classes = [ModelPermission|IsOwner]
+    permission_classes = [IsOwnerOrModelPermission]
+
+    def get_object(self):
+        pk = self.kwargs['pk']
+        # Use objects.filter().first() don't use objects.get() bcz it may occur error if data not found
+        obj = Task.objects.filter(id=pk).first()
+        if not obj:
+            raise ValidationError({"Error": "No Data Found"})
+        self.check_object_permissions(self.request, obj.list.created_by)
+        return obj
 
 
 class TasklistRetrieveAPIView(generics.RetrieveAPIView):
     serializer_class = RetrieveTasklistSerializer
     queryset = Tasklist.objects.all()
-    permission_classes = [IsOwner]
+    permission_classes = [IsOwnerOrModelPermission]
 
-    # def get_queryset(self):
-    #     # queryset = Tasklist.objects.filter
     def get_object(self):
         pk = self.kwargs['pk']
-        print(pk)
-        print(self.queryset)
-        obj = Tasklist.objects.get(id=pk)
+        obj = Tasklist.objects.filter(id=pk).first()
+        if not obj:
+            raise ValidationError({"Error": "No Data Found"})
         self.check_object_permissions(self.request, obj.created_by)
-        print(obj)
         return obj
-
-    # def get(self, request, *args, **kwargs):
-    #     return self.retrieve(request, *args, **kwargs)
-    # def get_queryset(self):
-    #     queryset = Tasklist.objects.filter(is_subtask=False)
-    #     return queryset
-
-
-    # def get_queryset(self):
